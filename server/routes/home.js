@@ -93,7 +93,6 @@ router.post("/createConversation", jwtMiddleware, async (req, res) => {
     // Check if conversation started
     const queryUser = req.body.id;
     for (let i = 0; i < req.user.contacts.length; i++) {
-      console.log(req.user.contacts[i].toString());
       if (queryUser === req.user.contacts[i].toString()) {
         const newConversation = new Conversation({
           users: [req.body.id, req.user.id],
@@ -117,7 +116,6 @@ router.get("/conversations/:id", jwtMiddleware, async (req, res) => {
   });
 
   if (query) {
-    // Create conversation
     return res.send(query);
   } else {
     return res.status(400).send({ msg: "No conversations" });
@@ -155,7 +153,27 @@ router.put("/addMessage", jwtMiddleware, async (req, res) => {
       const saved = await conversation.save();
       res.send(saved);
     } else {
-      return res.status(400).send({ msg: "No conversation" });
+      // Add in contactList
+      const updateContacts = (user, newContact) => {
+        user.contacts.push(newContact.id);
+        user.save();
+        newContact.contacts.push(user.id);
+        newContact.save();
+      };
+      updateContacts(req.user, user);
+      //Create Conversation
+      const newConversation = new Conversation({
+        users: [req.body.id, req.user.id],
+        msgHistory: [
+          {
+            msg: req.body.msg,
+            recipient: user.id,
+            read: false,
+          },
+        ],
+      });
+      const savedConversation = await newConversation.save();
+      return res.json(savedConversation);
     }
   } else {
     return res.status(400).send({ msg: "No user" });
