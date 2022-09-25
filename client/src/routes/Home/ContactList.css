@@ -1,0 +1,88 @@
+.listContainer {
+  display: flex;
+  border: solid 2px;
+  flex-direction: column;
+  width: 400px;
+  height: 100%;
+}
+
+.contact {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.contact:hover {
+  background-color: #dbdad5;
+}
+.searchResult:hover {
+  background-color: rgb(162, 203, 183);
+}
+.searchResult {
+  display: flex;
+  padding: 10px;
+  align-items: center;
+}
+.filterDropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+  align-self: center;
+  background-color: white;
+  width: 80%;
+  max-height: 250px;
+  overflow-y: scroll;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  z-index: 1;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 10px 0 rgba(0, 0, 0, 0.19);
+  transition: all 5s ease-in-out;
+}
+
+@-webkit-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@-moz-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.filterDropdown {
+  -webkit-animation: fadein 0.25s;
+  -moz-animation: fadein 0.25s;
+  animation: fadein 0.25s;
+}
+.filterDropdown::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.filterDropdown:empty {
+  display: none;
+}
+
+.filterDropdownOff {
+  display: none; /* Safari and Chrome */
+}
