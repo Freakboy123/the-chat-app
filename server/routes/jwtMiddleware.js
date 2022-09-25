@@ -3,7 +3,6 @@ const User = require("../Schemas/User");
 
 // middleware
 const verifyToken = (req, res, next) => {
-  console.log();
   try {
     jwt.verify(
       req.cookies.token,
@@ -20,7 +19,6 @@ const verifyToken = (req, res, next) => {
           }).exec();
           if (user) {
             req.user = user;
-            console.log(req.user);
             next();
           } else {
             res.clearCookie("token");

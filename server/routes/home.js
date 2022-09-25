@@ -17,7 +17,6 @@ router.get("/contacts", jwtMiddleware, async (req, res) => {
         const conversation = await Conversation.findOne({
           users: { $all: [contact.id, req.user.id] },
         });
-        console.log(conversation);
         const countUnread = (conv) => {
           const unreadConvs = conv.msgHistory.filter((x) => {
             if (x.recipient.toString() === req.user.id.toString()) {
@@ -29,7 +28,7 @@ router.get("/contacts", jwtMiddleware, async (req, res) => {
         const unreads = countUnread(conversation);
 
         contacts[i] = {
-          id: contact.id,
+          _id: contact.id,
           username: contact.username,
           avatar: contact.avatar,
           lastMsg:
@@ -47,78 +46,20 @@ router.get("/contacts", jwtMiddleware, async (req, res) => {
   }
 });
 
-router.put("/addContact", jwtMiddleware, async (req, res) => {
+router.get("/conversations/:id", jwtMiddleware, async (req, res) => {
   try {
-    const query = req.body; // Object id
-    const newContact = await User.findById(query.id).exec();
-    if (newContact) {
-      if (newContact.email === req.user.email) {
-        return res.status(400).send({ msg: "Contact cannot be self." });
-      }
-      // add contact for each other
-      const updateContacts = (user, newContact) => {
-        // Check for duplicate
-        for (let i = 0; i < user.contacts.length; i++) {
-          if (newContact.id === user.contacts[i].toString()) {
-            // Duplicate found
-            return res.status(400).send({ msg: "Contact already exists" });
-          }
-        }
-        user.contacts.push(newContact.id);
-        user.save();
-        newContact.contacts.push(user.id);
-        newContact.save();
-        return res.send({
-          email: user.email,
-          username: user.username,
-          id: user.id,
-        });
-      };
-      updateContacts(req.user, newContact);
+    const query = await Conversation.findOne({
+      users: { $all: [req.params.id, req.user.id] },
+    });
+
+    if (query) {
+      return res.send(query);
     } else {
-      return res.status(400).send({ msg: "User not found" });
+      return res.status(400).send({});
     }
   } catch (err) {
     console.log(err);
     return res.status(500).send(err);
-  }
-});
-
-router.post("/createConversation", jwtMiddleware, async (req, res) => {
-  const query = await Conversation.findOne({
-    users: { $all: [req.user.id, req.body.id] },
-  });
-
-  if (!query) {
-    // Check if conversation started
-    const queryUser = req.body.id;
-    for (let i = 0; i < req.user.contacts.length; i++) {
-      if (queryUser === req.user.contacts[i].toString()) {
-        const newConversation = new Conversation({
-          users: [req.body.id, req.user.id],
-          msgHistory: req.body.msgHistory || {},
-        });
-        const savedConversation = await newConversation.save();
-        console.log(savedConversation);
-        return res.json(savedConversation);
-      }
-    }
-    return res.status(400).send({ msg: "No contact found" });
-    // Create conversation
-  } else {
-    return res.status(400).send({ msg: "Conversation already exists" });
-  }
-});
-
-router.get("/conversations/:id", jwtMiddleware, async (req, res) => {
-  const query = await Conversation.findOne({
-    users: { $all: [req.params.id, req.user.id] },
-  });
-
-  if (query) {
-    return res.send(query);
-  } else {
-    return res.status(400).send({ msg: "No conversations" });
   }
 });
 
@@ -163,7 +104,7 @@ router.put("/addMessage", jwtMiddleware, async (req, res) => {
       updateContacts(req.user, user);
       //Create Conversation
       const newConversation = new Conversation({
-        users: [req.body.id, req.user.id],
+        users: [req.body.recipient, req.user._id],
         msgHistory: [
           {
             msg: req.body.msg,
@@ -180,23 +121,34 @@ router.put("/addMessage", jwtMiddleware, async (req, res) => {
   }
 });
 
-router.get("/users", jwtMiddleware, async (req, res) => {
+router.get("/users/:query", jwtMiddleware, async (req, res) => {
   try {
     const users = await User.find(
       {
         username: { $nin: req.user.username },
         email: { $nin: req.user.email },
         $or: [
-          { username: new RegExp(`${req.body.query}`, "i") },
-          { email: new RegExp(`${req.body.query}`, "i") },
+          { username: new RegExp(`^${req.params.query}`, "i") },
+          { email: new RegExp(`^${req.params.query}`, "i") },
         ],
       },
       { password: 0, contacts: 0 }
     )
       .limit(5)
       .exec();
-    if (users.length) res.send(users);
-    else res.status(400).send({ msg: "No users" });
+    if (users.length) {
+      const usersToSend = [];
+      for (let i = 0; i < users.length; i++) {
+        let user = users[i];
+        usersToSend.push({
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar,
+          id: user._id,
+        });
+      }
+      res.send(users);
+    } else res.status(400).send({ msg: "No users" });
   } catch (err) {
     res.status(500).send(err);
   }
