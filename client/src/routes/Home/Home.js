@@ -11,7 +11,7 @@ import UserContext from "../../UserContext";
 import ContactsContext from "./ContactsContext";
 import { Box } from "@mui/system";
 
-const socket = io.connect("http://192.168.86.36:5002");
+const socket = io.connect("http://localhost:5002");
 
 const Home = () => {
   const [currentOpened, setCurrentOpened] = useState({});
