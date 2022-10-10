@@ -146,7 +146,7 @@ router.post("/login", async (req, res) => {
       res.status(400).json({ msg: "Wrong email/password" });
     }
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     res.status(500).send(err);
   }
 });
