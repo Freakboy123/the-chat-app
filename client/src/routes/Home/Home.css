@@ -1,9 +1,0 @@
-.appContainer {
-  display: flex;
-  flex-direction: row;
-  margin-left: 40px;
-  margin-right: 40px;
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-  height: 80vh;
-}
