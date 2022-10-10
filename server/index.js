@@ -75,7 +75,8 @@ connectDB();
 
 // default route
 app.get("/api", (req, res) => {
-  res.json({ msg: "Hello World!" });
+  console.log("IT WORKED!");
+  res.json({ msg: "Hello World!!!" });
 });
 
 const PORT = process.env.PORT || 5001;
